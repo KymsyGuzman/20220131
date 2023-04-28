@@ -1,24 +1,32 @@
-name: Build and Deploy
+name: ci
+
 on:
   push:
     branches:
-      - main
+      - "main"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - name: Install Dependencies
-      run: npm install
-    - name: Build Application
-      run: npm run build
-    - name: Deploy Application
-      uses: GoogleCloudPlatform/github-actions/deploy-appengine@main
-      with:
-        project_id: my-project-id
-        version: ${{ github.sha }}
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/clockbox:latest
+
