@@ -1,0 +1,24 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - name: Install Dependencies
+      run: npm install
+    - name: Build Application
+      run: npm run build
+    - name: Deploy Application
+      uses: GoogleCloudPlatform/github-actions/deploy-appengine@main
+      with:
+        project_id: my-project-id
+        version: ${{ github.sha }}
